@@ -13,7 +13,7 @@ print('reference length: ', len(ref_sequence))
 # List of transcription start sites. 
 ### Csv with [0] uid, [1] threshold, [2] genome, [3] feature name, [4] strand, [5] TSS
 TSS_list = []
-with open('random_input.csv', 'r') as TSS_input:
+with open('s_mutans-glc-TSSs.csv', 'r') as TSS_input:
     TSS_reader = csv.reader(TSS_input, delimiter = ',')
     next(TSS_reader, None) # ignore the header row
     for row in TSS_reader:
@@ -57,7 +57,7 @@ def search_for_promoters(promoter_list, promoter_type, TSS, window_start, window
                     promoter_pos = window_end - pos
                     distance_to_TSS = TSS - promoter_pos
                     if promoter_type == -10:
-                        promoter_seq = str(ref_seq[(promoter_pos - 7):(promoter_pos + 3)].reverse_complement())
+                        promoter_seq = str(ref_seq[(promoter_pos - 6):(promoter_pos + 3)].reverse_complement())
                     elif promoter_type == -35:
                         promoter_seq = str(ref_seq[(promoter_pos - 6):promoter_pos].reverse_complement())
                 else: print('strand error')
@@ -107,7 +107,7 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
                     full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' '))
     return (full_results, exists_thirtyfive_promoter_results)
 
-with open('random_search_results_revised.csv', 'w') as outfile:
+with open('putative_TSS_results.csv', 'w') as outfile:
     writer = csv.writer(outfile, delimiter = '\t')
     writer.writerow(['uid', 'threshold', 'genome', 'feature name', 'strand', 'TSS', 'search results', 'extended -10 promoter?', '-35 promoter?'])
     for entry in TSS_list:
