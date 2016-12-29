@@ -4,22 +4,21 @@ from Bio.Alphabet import IUPAC
 from Bio.SeqUtils import nt_search
 import csv
 
-#gb_path = 'NC_004350_2.gb'
-#ref_record = SeqIO.read(open(gb_path), 'genbank')
-#ref_sequence = ref_record.seq
-ref_sequence = Seq('CCCTTGACACCCCCCCCCCCCCCCCCCTATAATCCCCCCCCCCGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGGGGGGG', IUPAC.unambiguous_dna)
-print(ref_sequence)
-print(len(ref_sequence))
+gb_path = 'NC_004350_2.gb'
+ref_record = SeqIO.read(open(gb_path), 'genbank')
+ref_sequence = ref_record.seq
+#ref_sequence = Seq('GGGGGGGGGGGTGGGGGGGGGGGATTATACCAGGGGGGGGGGGGGGGGGTGTCAACCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', IUPAC.unambiguous_dna)
+print('reference length: ', len(ref_sequence))
 
 # List of transcription start sites. 
 ### Csv with [0] uid, [1] threshold, [2] genome, [3] feature name, [4] strand, [5] TSS
 TSS_list = []
-with open('sample_tss_list.csv', 'r') as TSS_input:
+with open('random_input.csv', 'r') as TSS_input:
     TSS_reader = csv.reader(TSS_input, delimiter = ',')
     next(TSS_reader, None) # ignore the header row
     for row in TSS_reader:
         TSS_list.append((row[0], row[1], row[2], row[3], row[4], int(row[5])))
-print(TSS_list)
+print('number TSS inputs: ', len(TSS_list))
 
 # Promoter sequences to look for: 
 ### In -10 promoters: A2 and T6 always conserved plus 2 out of 4 variable sites (total of 4/6).
@@ -80,7 +79,6 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
         max_search_win = ref_seq[(TSS - 1 - downstream_margin):(TSS + (upstream_margin + max_len_gap + 6))].reverse_complement()
     else: print('strand error')
     ten_promoter_results = search_for_promoters(ten_promoters, -10, TSS, ten_window_start_pos, ten_window_end_pos, ref_sequence, strand)
-    print(ten_promoter_results)
     exists_thirtyfive_promoter_results = False
     if len(ten_promoter_results) > 0:
         for promoter_record in ten_promoter_results:
@@ -92,7 +90,7 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
                 thirtyfive_win_end = ten_promoter_pos - min_len_gap
             elif strand == 'R':
                 thirtyfive_win_start = ten_promoter_pos + min_len_gap
-                thirtyfive_win_end = the_promoter_pos + (max_len_gap + 6)
+                thirtyfive_win_end = ten_promoter_pos + (max_len_gap + 6)
             else: print('strand error')
             thirtyfive_promoter_results = search_for_promoters(thirtyfive_promoters, -35, TSS, thirtyfive_win_start, thirtyfive_win_end, ref_sequence, strand)
             if len(thirtyfive_promoter_results) > 0:
@@ -109,9 +107,9 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
                     full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' '))
     return (full_results, exists_thirtyfive_promoter_results)
 
-with open('test.csv', 'w') as outfile:
+with open('random_search_results_revised.csv', 'w') as outfile:
     writer = csv.writer(outfile, delimiter = '\t')
-    writer.writerow(['uid', 'threshold', 'genome', 'feature name', 'strand', 'TSS', 'search results'])
+    writer.writerow(['uid', 'threshold', 'genome', 'feature name', 'strand', 'TSS', 'search results', 'extended -10 promoter?', '-35 promoter?'])
     for entry in TSS_list:
         uid = entry[0]
         threshold = entry[1]
@@ -125,5 +123,12 @@ with open('test.csv', 'w') as outfile:
         if len(promoter_data) > 0:
                 # Print to results if there are any -35 promoters (which were only searched for if there were -10 promoters)
                 ### or if -10 promoter is marked 'extended'
-                if thirtyfive_promoter_presense is True or any('extended' in result[3] for result in promoter_data):
-                    writer.writerow([uid, threshold, genome, feature_name, strand, TSS, promoter_data])
+            if thirtyfive_promoter_presense is True and any('extended' in result[4] for result in promoter_data):
+                writer.writerow([uid, threshold, genome, feature_name, strand, TSS, promoter_data, 'yes', 'yes'])
+            elif any('extended' in result[4] for result in promoter_data):
+                writer.writerow([uid, threshold, genome, feature_name, strand, TSS, promoter_data, 'yes', 'no'])
+            elif thirtyfive_promoter_presense is True:
+                writer.writerow([uid, threshold, genome, feature_name, strand, TSS, promoter_data, 'no', 'yes'])
+            else:
+                writer.writerow([uid, threshold, genome, feature_name, strand, TSS, promoter_data, 'no', 'no'])
+            
