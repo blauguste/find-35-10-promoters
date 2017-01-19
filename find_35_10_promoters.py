@@ -107,7 +107,6 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
     print('number TSS inputs: ', len(TSS_list))
 
     with open(outpath, 'w') as outfile:
-        list_of_ten_promoters = []
         writer = csv.writer(outfile, delimiter = '\t')
         writer.writerow(['uid', 'threshold', 'genome', 'feature name', 'strand', 'TSS', 'search results', 'extended -10 promoter?', '-35 promoter?'])
         for entry in TSS_list:
@@ -121,11 +120,6 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
             promoter_data = full_results[0]
             thirtyfive_promoter_presense = full_results[1]
             if len(promoter_data) > 0:
-                # Make a list of all the -10 promoters found
-                for promoter_entry in promoter_data:
-                    ten_seq = Seq(promoter_entry[3])
-                    seq_record = SeqRecord(ten_seq)
-                    list_of_ten_promoters.append(seq_record)
                 if thirtyfive_promoter_presense is True and any('extended' in result[4] for result in promoter_data):
                     writer.writerow([uid, threshold, genome, feature_name, strand, TSS, sorted(promoter_data), 'yes', 'yes'])
                 elif any('extended' in result[4] for result in promoter_data):
