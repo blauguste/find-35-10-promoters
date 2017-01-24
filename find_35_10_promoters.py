@@ -39,8 +39,12 @@ def search_for_promoters(promoter_list, promoter_type, TSS, window_start, window
 def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downstream_margin, min_len_gap, max_len_gap):
     # Promoter sequences to look for: 
     ### In -10 promoters: A2 and T6 always conserved plus 2 out of 4 variable sites (total of 4/6).
-    ### In -35 promoters: T1 and T2 always conserved plus 2 out of 4 variable sites (total of 4/6).
     ten_promoters = ['TATNNT', 'TANANT', 'TANNAT', 'NATANT', 'NATNAT', 'NANAAT']
+    ### In -10 promoters: T1, A2, T6 always conserved plus 1 out of 3 variable sites (total of 4/6)
+    #ten_promoters = ['TANNAT', 'TANANT', 'TATNNT']
+    ### In -35 promoters: 4 out 6 sites conserved:
+    #thirtyfive_promoters = ['NNGACA', 'NTNACA', 'NTGNCA', 'NTGANA', 'NTGACN', 'TNNACA', 'TNGNCA', 'TNGANA', 'TNGACN', 'TTNNCA', 'TTNANA', 'TTNACN', 'TTGNNA', 'TTGNCN', 'TTGANN']
+    ### In -35 promoters: T1 and T2 always conserved plus 2 out of 4 variable sites (total of 4/6).
     thirtyfive_promoters = ['TTGANN', 'TTGNCN', 'TTGNNA', 'TTNACN', 'TTNANA', 'TTNNCA']
     
     list_of_ten_promoters = []
@@ -76,14 +80,14 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
                 # -35 promoters boolean switched to true if any of the -10 promoters have -35 promoters
                 exists_thirtyfive_promoter_results = True
                 if ten_promoter_seq.startswith('TG'):
-                    full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, 'extended', thirtyfive_promoter_results))
+                    full_results.append((ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, 'extended', thirtyfive_promoter_results))
                 else:
-                    full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' ', thirtyfive_promoter_results))
+                    full_results.append((ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' ', thirtyfive_promoter_results))
             else:
                 if ten_promoter_seq.startswith('TG'):
-                    full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, 'extended'))
+                    full_results.append((ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, 'extended'))
                 else:
-                    full_results.append((str(max_search_win), ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' '))
+                    full_results.append((ten_promoter_pos, ten_promoter_distance_to_TSS, ten_promoter_seq, ' '))
     return (full_results, exists_thirtyfive_promoter_results)
 
 def find_35_10_promoters(gb_path, TSS_table, outpath):
@@ -94,8 +98,8 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
     ten_upstream_margin = 50
     ten_downstream_margin = 10
     # Where to search for -35 promoters relative to -10 promoters
-    min_len_gap = 15
-    max_len_gap = 20
+    min_len_gap = 17
+    max_len_gap = 21
     # List of transcription start sites. 
     ### Csv with [0] uid, [1] threshold, [2] genome, [3] feature name, [4] strand, [5] TSS
     TSS_list = []
@@ -120,9 +124,9 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
             promoter_data = full_results[0]
             thirtyfive_promoter_presense = full_results[1]
             if len(promoter_data) > 0:
-                if thirtyfive_promoter_presense is True and any('extended' in result[4] for result in promoter_data):
+                if thirtyfive_promoter_presense is True and any('extended' in result[3] for result in promoter_data):
                     writer.writerow([uid, threshold, genome, feature_name, strand, TSS, sorted(promoter_data), 'yes', 'yes'])
-                elif any('extended' in result[4] for result in promoter_data):
+                elif any('extended' in result[3] for result in promoter_data):
                     writer.writerow([uid, threshold, genome, feature_name, strand, TSS, sorted(promoter_data), 'yes', 'no'])
                 elif thirtyfive_promoter_presense is True:
                     writer.writerow([uid, threshold, genome, feature_name, strand, TSS, sorted(promoter_data), 'no', 'yes'])
