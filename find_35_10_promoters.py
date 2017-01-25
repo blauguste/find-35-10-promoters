@@ -6,6 +6,8 @@ from Bio.SeqUtils import nt_search
 import csv
 import sys
 
+#### note: the promoter positions given in the output are pythonic positions. add one to get 'true' positions.
+
 def search_for_promoters(promoter_list, promoter_type, TSS, window_start, window_end, ref_seq, strand):
     unique_search_results = set()
     if strand == 'F':
@@ -26,8 +28,9 @@ def search_for_promoters(promoter_list, promoter_type, TSS, window_start, window
                     elif promoter_type == -35:
                         promoter_seq = str(ref_seq[promoter_pos:(promoter_pos + 6)])
                 elif strand == 'R':
-                    promoter_pos = window_end - pos
-                    distance_to_TSS = TSS - promoter_pos
+                    # Need to subtract one because window end is not the last position of the promoter, but rather the position after that (end is not inclusive)
+                    promoter_pos = window_end - 1 - pos
+                    distance_to_TSS = TSS - (promoter_pos + 1)
                     if promoter_type == -10:
                         promoter_seq = str(ref_seq[(promoter_pos - 6):(promoter_pos + 3)].reverse_complement())
                     elif promoter_type == -35:
@@ -55,6 +58,7 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
         # Define the window to look for -10 promoters
         ten_window_start_pos = TSS - 1 - upstream_margin
         ten_window_end_pos = TSS + downstream_margin
+        print(ref_seq[ten_window_start_pos:ten_window_end_pos])
         max_search_win = ref_seq[(TSS - 1 - (upstream_margin + max_len_gap + 6)):(TSS + downstream_margin)]
     elif strand == 'R':
         ten_window_start_pos = TSS - 1 - downstream_margin
@@ -91,8 +95,9 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
     return (full_results, exists_thirtyfive_promoter_results)
 
 def find_35_10_promoters(gb_path, TSS_table, outpath):
-    ref_record = SeqIO.read(open(gb_path), 'genbank')
-    ref_sequence = ref_record.seq
+    #ref_record = SeqIO.read(open(gb_path), 'genbank')
+    #ref_sequence = ref_record.seq
+    ref_sequence = Seq('GGGGGGGGGGATTATACCCCXGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCC')
     print('reference length: ', len(ref_sequence))
     # Length to extend the search window (upstream and downstream of TSS)
     ten_upstream_margin = 50
