@@ -58,7 +58,7 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
         # Define the window to look for -10 promoters
         ten_window_start_pos = TSS - 1 - upstream_margin
         ten_window_end_pos = TSS + downstream_margin
-        print(ref_seq[ten_window_start_pos:ten_window_end_pos])
+        #print(ref_seq[ten_window_start_pos:ten_window_end_pos])
         max_search_win = ref_seq[(TSS - 1 - (upstream_margin + max_len_gap + 6)):(TSS + downstream_margin)]
     elif strand == 'R':
         ten_window_start_pos = TSS - 1 - downstream_margin
@@ -95,9 +95,9 @@ def record_thirtyfive_ten_promoters(ref_seq, TSS, strand, upstream_margin, downs
     return (full_results, exists_thirtyfive_promoter_results)
 
 def find_35_10_promoters(gb_path, TSS_table, outpath):
-    #ref_record = SeqIO.read(open(gb_path), 'genbank')
-    #ref_sequence = ref_record.seq
-    ref_sequence = Seq('GGGGGGGGGGATTATACCCCXGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCC')
+    ref_record = SeqIO.read(open(gb_path), 'fasta')
+    ref_sequence = ref_record.seq
+    #ref_sequence = Seq('GGGGGGGGGGATTATACCCCXGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCCGGGGGGGGGGCCCCCCCCCC')
     print('reference length: ', len(ref_sequence))
     # Length to extend the search window (upstream and downstream of TSS)
     ten_upstream_margin = 50
@@ -142,5 +142,5 @@ if __name__ == '__main__':
     if len(sys.argv) == 4:
          find_35_10_promoters(sys.argv[1], sys.argv[2], sys.argv[3])
     else:
-         print("Usage: find_35_10_promoters.py reference_genbank.gb TSS_input.csv results_outpath.csv")
+         print("Usage: find_35_10_promoters.py reference_fasta.fa TSS_input.csv results_outpath.csv")
          sys.exit(0)
