@@ -112,7 +112,7 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
         TSS_reader = csv.reader(TSS_input, delimiter = ',')
         next(TSS_reader, None) # ignore the header row
         for row in TSS_reader:
-            TSS_list.append((row[0], row[1], row[2], row[3], row[4], int(row[5])))
+            TSS_list.append((row[0], row[1], row[2], row[3], row[4], int(row[5]), int(row[6]), int(row[7])))
     print('number TSS inputs: ', len(TSS_list))
 
     with open(outpath, 'w') as outfile:
@@ -125,6 +125,7 @@ def find_35_10_promoters(gb_path, TSS_table, outpath):
             feature_name = entry[3]
             strand = entry[4]
             TSS = entry[5]
+            length = entry[7]
             full_results = record_thirtyfive_ten_promoters(ref_sequence, TSS, strand, ten_upstream_margin, ten_downstream_margin, min_len_gap, max_len_gap)
             promoter_data = full_results[0]
             thirtyfive_promoter_presense = full_results[1]
